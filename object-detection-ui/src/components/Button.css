@@ -1,0 +1,54 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    gap: 0.5rem;
+  }
+  
+  .button.default {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+  }
+  
+  .button.default:hover {
+    background-color: #2563eb;
+  }
+  
+  .button.outline {
+    background-color: transparent;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+  
+  .button.outline:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .button.secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+    border: none;
+  }
+  
+  .button.secondary:hover {
+    background-color: #d1d5db;
+  }
+  
+  .button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .button svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  

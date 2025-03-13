@@ -1,0 +1,331 @@
+/* Import sleek font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  color: #222;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.ml-interface {
+  max-width: 768px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease-in-out;
+}
+
+.ml-interface:hover {
+  transform: scale(1.02);
+}
+
+/* Upload Area Styles */
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 3rem;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: all 0.3s ease-in-out;
+}
+
+.upload-area:hover {
+  background: #f3f4f6;
+  border-color: #3b82f6;
+}
+
+.upload-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-container {
+  width: 4rem;
+  height: 4rem;
+  background-color: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.icon-container.success {
+  background-color: #d1fae5;
+}
+
+.icon-container.success svg {
+  color: #10b981;
+}
+
+.upload-status {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.upload-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.upload-subtext {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.progress-bar {
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-indicator {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+/* Thumbnail Preview */
+.thumbnail-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.thumbnail-preview img {
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.thumbnail-preview img:hover {
+  transform: scale(1.1);
+}
+
+/* Webcam Styles */
+.webcam-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.webcam-view {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.webcam-video,
+.webcam-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.webcam-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(17, 24, 39, 0.7);
+  color: white;
+}
+
+.webcam-placeholder svg {
+  width: 3rem;
+  height: 3rem;
+  opacity: 0.5;
+}
+
+.webcam-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.webcam-button {
+  flex: 1;
+}
+
+/* Live Stream Styles */
+.livestream-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stream-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stream-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.stream-url-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stream-url-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.stream-url-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.stream-button {
+  white-space: nowrap;
+}
+
+.stream-error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.inference-button {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #2563eb;
+  color: white;
+  transition: background 0.3s ease-in-out;
+}
+
+.inference-button:hover {
+  background-color: #1e40af;
+}
+
+/* Inference Results */
+.inference-content {
+  padding: 1rem 0;
+}
+
+.inference-result {
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 10px;
+}
+
+.result-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.result-text {
+  font-size: 0.9rem;
+}
+
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid #e5e7eb;
+  border-bottom-color: #3b82f6;
+}
+
+.loading-text {
+  margin-left: 0.75rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
