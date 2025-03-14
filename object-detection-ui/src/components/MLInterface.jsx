@@ -1,68 +1,101 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import Button from "./Button"
-import Card from "./Card"
-import Tabs from "./Tabs"
-import Dialog from "./Dialog"
-import { Upload, Camera, Play, Square, Zap, Video } from "./Icons"
-import "./MLInterface.css"
+import { useState, useRef, useEffect } from "react";
+import Button from "./Button";
+import Card from "./Card";
+import Tabs from "./Tabs";
+import Dialog from "./Dialog";
+import { Upload, Camera, Play, Square, Zap, Video } from "./Icons";
+import "./MLInterface.css";
 
 function MLInterface() {
   // File upload state
-  const [file, setFile] = useState(null)
-  const [uploadStatus, setUploadStatus] = useState("idle") // "idle" | "uploading" | "uploaded" | "error"
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [file, setFile] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState("idle"); // "idle" | "uploading" | "uploaded" | "error"
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [outputFile, setOutputFile] = useState(null);
+  const [fileType, setFileType] = useState("");
+  const fileInputRef = useRef(null);
 
-  // Webcam state
-  const [isWebcamActive, setIsWebcamActive] = useState(false)
-  const [webcamData, setWebcamData] = useState(null)
-  const [activeTab, setActiveTab] = useState("upload")
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
+  // Webcam and Live Stream states (Unchanged)
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const [webcamData, setWebcamData] = useState(null);
+  const [activeTab, setActiveTab] = useState("upload");
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const [streamUrl, setStreamUrl] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [processedStreamUrl, setProcessedStreamUrl] = useState("");
+  const [streamError, setStreamError] = useState("");
 
-  // Live stream state
-  const [streamUrl, setStreamUrl] = useState("")
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [processedStreamUrl, setProcessedStreamUrl] = useState("")
-  const [streamError, setStreamError] = useState("")
-
-  // Inference state
-  const [isModelReady, setIsModelReady] = useState(false)
-  const [isInferenceDialogOpen, setIsInferenceDialogOpen] = useState(false)
-  const [inferenceResult, setInferenceResult] = useState(null)
+  // Inference state (Unchanged)
+  const [isModelReady, setIsModelReady] = useState(false);
+  const [isInferenceDialogOpen, setIsInferenceDialogOpen] = useState(false);
+  const [inferenceResult, setInferenceResult] = useState(null);
 
   // Simulate model loading when file is uploaded
   useEffect(() => {
     if (uploadStatus === "uploaded" && file) {
       const timer = setTimeout(() => {
-        setIsModelReady(true)
-      }, 2000)
-
-      return () => clearTimeout(timer)
+        setIsModelReady(true);
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [uploadStatus, file])
+  }, [uploadStatus, file]);
 
-  // Handle file upload
-  const handleFileUpload = (event) => {
-    const selectedFile = event.target.files?.[0]
-    if (selectedFile) {
-      setFile(selectedFile)
-      setUploadStatus("uploading")
+  /** Handle file upload and send it to FastAPI */
+  const handleFileUpload = async (event) => {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
 
-      // Simulate upload progress
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += 10
-        setUploadProgress(progress)
+    setFile(selectedFile);
+    setUploadStatus("uploading");
+    setOutputFile(null); // Clear previous output
 
-        if (progress >= 100) {
-          clearInterval(interval)
-          setUploadStatus("uploaded")
-        }
-      }, 300)
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) clearInterval(interval);
+    }, 300);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    setFileType(selectedFile.type.startsWith("image") ? "image" : "video");
+
+    try {
+      const endpoint = selectedFile.type.startsWith("image")
+        ? "http://127.0.0.1:8000/detect-image/"
+        : "http://127.0.0.1:8000/detect-video/";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      setUploadStatus("uploaded");
+
+      if (result.output_file) {
+        setOutputFile(`http://127.0.0.1:8000${result.output_file}`);
+      } else {
+        alert("Processing failed.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploadStatus("error");
+      alert("An error occurred. Check console for details.");
     }
-  }
+  };
+
+  /** Reset input for next upload */
+  const resetUpload = () => {
+    setFile(null);
+    setUploadStatus("idle");
+    setUploadProgress(0);
+    setOutputFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   // Handle webcam start
   const startWebcam = async () => {
@@ -116,9 +149,9 @@ function MLInterface() {
     setIsStreaming(true)
 
     try {
+      const endpoint = "http://127.0.0.1:8000/detect-video/"
       // Connect to FastAPI backend to process the stream
-      // This is a placeholder - the actual implementation would depend on your FastAPI setup
-      const response = await fetch("http://your-fastapi-backend/start-stream", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +179,7 @@ function MLInterface() {
   const stopLiveStream = async () => {
     try {
       // Notify the FastAPI backend to stop processing
-      await fetch("http://your-fastapi-backend/stop-stream", {
+      await fetch("http://127.0.0.1:8000/stop-stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,10 +197,20 @@ function MLInterface() {
   const runInference = async () => {
     setIsInferenceDialogOpen(true)
 
-    // Simulate API call to ML model endpoint
-    setTimeout(() => {
-      setInferenceResult("Object detected: Cat (confidence: 0.92)")
-    }, 1500)
+    try {
+      // Determine which endpoint to use based on file type
+      const endpoint = file && file.type.startsWith("image")
+        ? "http://127.0.0.1:8000/detect-image/"
+        : "http://127.0.0.1:8000/detect-video/";
+
+      // Simulate API call to ML model endpoint
+      setTimeout(() => {
+        setInferenceResult("Object detected: Cat (confidence: 0.92)")
+      }, 1500)
+    } catch (error) {
+      console.error("Error running inference:", error)
+      setInferenceResult("Error: Failed to process the input")
+    }
   }
 
   return (
@@ -200,7 +243,7 @@ function MLInterface() {
                     </div>
                     <p className="upload-text">Drag and drop your file here</p>
                     <p className="upload-subtext">or click to browse</p>
-                    <input type="file" className="file-input" onChange={handleFileUpload} accept="image/*" />
+                    <input type="file" className="file-input" onChange={handleFileUpload}/>
                   </>
                 )}
               </div>
@@ -217,6 +260,28 @@ function MLInterface() {
                 </div>
               )}
             </div>
+            {outputFile && (
+            <div className="output-container">
+            <h3>Processed Output:</h3>
+            {fileType === "image" ? (
+            <img src={`${outputFile}`} alt="Processed Output" className="output-image" />
+          ) : (
+            <video controls autoPlay className="output-video">
+              <source src={`${outputFile}`} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          )}
+        </div>
+      )}
+
+
+              {uploadStatus === "uploaded" && (
+                <div className="reset-container">
+                  <Button onClick={resetUpload} className="reset-button">
+                    Upload Another File
+                  </Button>
+                </div>
+              )}
 
             <div className="card-footer">
               {isModelReady && (
@@ -361,5 +426,4 @@ function MLInterface() {
   )
 }
 
-export default MLInterface
-
+export default MLInterface;

@@ -1,5 +1,5 @@
-import MLInterface from "./components/MLInterface"
-import "./App.css"
+import MLInterface from "./components/MLInterface";
+import "./App.css";
 
 function App() {
   return (
@@ -9,8 +9,7 @@ function App() {
         <MLInterface />
       </main>
     </div>
-  )
+  );
 }
 
-export default App
-
+export default App;

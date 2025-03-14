@@ -1,10 +1,29 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 import cv2
 import numpy as np
 import os
 import shutil
 
 app = FastAPI()
+
+# Ensure 'uploads' directory exists
+UPLOADS_DIR = "uploads"
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+# Allow frontend to communicate with backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to your frontend URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Serve uploaded and processed video files
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # Paths to YOLOv4-Tiny model files
 CFG_PATH = "yolov4_tiny.cfg"
@@ -35,8 +54,8 @@ def get_color(class_id):
 async def detect_image(file: UploadFile = File(...)):
     """Detects objects in an uploaded image file."""
     try:
-        # Save uploaded file temporarily
-        temp_image_path = f"temp_{file.filename}"
+        # Save uploaded file in uploads folder
+        temp_image_path = os.path.join(UPLOADS_DIR, file.filename)
         with open(temp_image_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
@@ -74,26 +93,22 @@ async def detect_image(file: UploadFile = File(...)):
                     cv2.putText(image, f"{class_name} {confidence:.2f}", (x1, y1 - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
-        # Save processed image
-        output_path = "output_image.jpg"
+        # Save processed image in uploads folder
+        output_path = os.path.join(UPLOADS_DIR, "output_" + file.filename)
         cv2.imwrite(output_path, image)
 
-        # Clean up temp file
-        os.remove(temp_image_path)
-
-        return {"message": "Image processed successfully", "output_file": output_path}
+        return {"message": "Image processed successfully", "output_file": f"/uploads/output_{file.filename}"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-from fastapi.responses import FileResponse
-
 @app.post("/detect-video/")
 async def detect_video(file: UploadFile = File(...)):
     """Detects objects in an uploaded video file and returns the processed video."""
     try:
-        temp_video_path = f"temp_{file.filename}"
+        # Save uploaded file in uploads folder
+        temp_video_path = os.path.join(UPLOADS_DIR, file.filename)
         with open(temp_video_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
@@ -106,8 +121,13 @@ async def detect_video(file: UploadFile = File(...)):
         frame_height = int(videoCap.get(4))
         fps = int(videoCap.get(cv2.CAP_PROP_FPS))
 
-        output_video_path = "output_video.avi"
-        output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (frame_width, frame_height))
+        # # Save output video in uploads folder
+        # output_video_path = os.path.join(UPLOADS_DIR, "processed_" + file.filename)
+        # output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (frame_width, frame_height))
+
+        output_video_path = os.path.join(UPLOADS_DIR, "processed_" + file.filename.replace(".avi", ".mp4"))  # Ensure MP4 format
+        output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'avc1'), fps, (frame_width, frame_height))
+
 
         while videoCap.isOpened():
             ret, frame = videoCap.read()
@@ -140,9 +160,22 @@ async def detect_video(file: UploadFile = File(...)):
 
         videoCap.release()
         output_video.release()
-        os.remove(temp_video_path)
 
-        return FileResponse(output_video_path, media_type="video/x-msvideo", filename="processed_video.avi")
+        return {"message": "Video processed successfully", "output_file": f"/uploads/processed_{file.filename}"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi.responses import FileResponse
+
+
+# @app.get("/uploads/{filename}")
+# async def get_video(filename: str):
+#     """Serves the processed video file correctly."""
+#     file_path = os.path.join(UPLOADS_DIR, filename)
+
+#     if not os.path.exists(file_path):
+#         raise HTTPException(status_code=404, detail="File not found")
+
+#     return FileResponse(file_path, media_type="video/mp4", headers={"Accept-Ranges": "bytes"})
+
